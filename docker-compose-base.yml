@@ -1,0 +1,80 @@
+version: "2.1"
+
+services:
+
+  # ---------------------------------
+  # Gather container
+  # ---------------------------------
+
+  gather-base:
+    image: ehealthafrica/gather:3.0.0-rc
+    stdin_open: true
+    tty: true
+    environment:
+      # CAS_SERVER_URL: https://ums-dev.ehealthafrica.org
+      CSRF_COOKIE_DOMAIN: gather.local
+      HOSTNAME: gather.local
+
+      DJANGO_SECRET_KEY: "T7cyDESETLHDz43xf3Spx9NN6UdbDkpeREfy6fwATcckcwXUUvnqfHcwyNLHrXAZ"
+
+      ADMIN_PASSWORD: adminadmin
+
+      AETHER_KERNEL_TOKEN: a2d6bc20ad16ec8e715f2f42f54eb00cbbea2d24
+      AETHER_KERNEL_URL: http://kernel:8000
+      AETHER_KERNEL_URL_TEST: http://kernel-test:9000
+
+      AETHER_MODULES: "kernel,odk,"
+
+      AETHER_ODK_TOKEN: a2d6bc20ad16ec8e715f2f42f54eb00cbbea2d24
+      AETHER_ODK_URL: http://odk:8443
+      AETHER_ODK_URL_TEST: http://odk-test:9443
+
+      RDS_DB_NAME: gather
+      RDS_HOSTNAME: db
+      RDS_PASSWORD: ""
+      RDS_PORT: 5432
+      RDS_USERNAME: postgres
+
+      CSV_HEADER_RULES: remove-prefix;payload.,remove-prefix;None.,replace;.;:;
+      CSV_HEADER_RULES_SEP: ;
+      CSV_MAX_ROWS_SIZE: 1000
+    volumes:
+      # media folder used by nginx
+      - ./tmp/gather/media:/media
+      # static folder used by nginx
+      - ./tmp/gather/static:/var/www/static
+      # uwsgi.ini using port 8443
+      - ./conf/uwsgi/gather.ini:/code/conf/uwsgi.ini
+    ports:
+      - "8005:8005"
+    command: start
+
+  # ---------------------------------
+  # NGINX
+  # ---------------------------------
+
+  nginx-base:
+    image: nginx:stable-alpine
+    volumes:
+      # config file
+      - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./conf/nginx/sites-enabled:/etc/nginx/sites-enabled
+
+      # nginx log files
+      - ./tmp/nginx:/var/log/nginx/
+
+      # aether favicon
+      - ./aether-bootstrap/assets/aether.ico:/media/aether.ico
+
+      # media folders per container
+      - ./aether-bootstrap/tmp/kernel/media:/media/kernel
+      - ./aether-bootstrap/tmp/odk/media:/media/odk
+
+      # static folders per container
+      - ./aether-bootstrap/tmp/kernel/static:/static/kernel
+      - ./aether-bootstrap/tmp/odk/static:/static/odk
+      - ./aether-bootstrap/tmp/ui/static:/static/ui
+      - ./tmp/gather/static:/static/gather
+    ports:
+      # "HOST:CONTAINER"
+      - "80:80"
