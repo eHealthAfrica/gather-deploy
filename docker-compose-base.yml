@@ -79,3 +79,4 @@ services:
     ports:
       # "HOST:CONTAINER"
       - "80:80"
+      - "8443:8443"
