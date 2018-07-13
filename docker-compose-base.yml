@@ -68,13 +68,13 @@ services:
       - ./aether-bootstrap/assets/aether.ico:/media/aether.ico
 
       # media folders per container
-      - ./aether-bootstrap/tmp/kernel/media:/media/kernel
-      - ./aether-bootstrap/tmp/odk/media:/media/odk
+      - ./aether-bootstrap/.persistent_data/kernel/media:/media/kernel
+      - ./aether-bootstrap/.persistent_data/odk/media:/media/odk
 
       # static folders per container
-      - ./aether-bootstrap/tmp/kernel/static:/static/kernel
-      - ./aether-bootstrap/tmp/odk/static:/static/odk
-      - ./aether-bootstrap/tmp/ui/static:/static/ui
+      - ./aether-bootstrap/.persistent_data/kernel/static:/static/kernel
+      - ./aether-bootstrap/.persistent_data/odk/static:/static/odk
+      - ./aether-bootstrap/.persistent_data/ui/static:/static/ui
       - ./tmp/gather/static:/static/gather
     ports:
       # "HOST:CONTAINER"
