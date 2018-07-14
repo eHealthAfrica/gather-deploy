@@ -83,16 +83,6 @@ services:
         aliases:
           - gather.local
 
-  # ---------------------------------
-  # Gather Webpack container
-  # ---------------------------------
-
-  # gather-webpack:
-  #   extends:
-  #     file: docker-compose-base.yml
-  #     service: gather-webpack-base
-  #   networks:
-  #     - aether
 
   # ---------------------------------
   # NGINX container
