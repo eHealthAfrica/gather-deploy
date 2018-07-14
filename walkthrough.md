@@ -1,0 +1,133 @@
+# Aether CKAN Consumer Example
+
+To demonstrate operation of the Aether CKAN Consumer, we'll setup a CKAN Data Portal, fed by Gather -- eHA's data collection solution built on Aether. 
+
+__Components:__
+- Gather
+- Aether Core (UI, ODK, Kernel)
+- Aether CKAN Consumer
+- CKAN / CKAN Datastore extension
+
+#### __Requirements:__
+For Gather -> CKAN
+- Docker and Docker Compose
+- 8GB+ Ram
+- Ubuntu recent LTS or possibly Mac OS
+    - _Tested on 16.04_
+- An android device with ODK Collect
+- Knowledge of your host ip on the local network (for ODK submission)
+
+#### __End to End Instructions__:
+- __Add the following to your /etc/hosts file.__
+    - 127.0.0.1       localhost ui.aether.local kernel.aether.local gather.local
+- __Make sure you don't have old Docker Containers Running__
+    - Docker ps should return no running containers:
+        - `docker ps`
+- __Clone this repository.__
+    - `git clone git@github.com:eHealthAfrica/gather-deploy.git gather` 
+- __Create a docker network for Aether__
+    - `docker network create aether_internal`
+
+- __Navigate to gather__
+    -  `cd gather`
+- __Initialize the Aether Bootstrap repository__
+    - `git submodule update --init --recursive`
+- __Bring up Gather on Aether__
+    - `docker-compose up -d`
+- __Setup Gather__
+    - In a browser, open:
+        - [http://gather.local]`
+        - credentials:
+            - _admin-gather_
+            - _adminadmin_
+    - Create a new surveyor.
+          - Select Surveyors from the top bar.
+          - Create a new one.
+          - __This username and password will be use later in ODK Settings!!!__
+    - Create a new Survey.
+          - Add your surveyor to the survey.
+          - Upload the sample XForm from gather/aether-bootstrap//assets/forms/aether-walkthrough-microcensus.xls
+          - Save the Survey
+- __Submit Data From ODK Collect__:
+  - On your mobile device open ODK Collect
+          - Press the Three Dots icon in the upper right hand corner.
+          - Select "General Settings"
+          - Select "Server"
+          - Change the ODK Aggregate Settings:
+              - URL: http://the-ip-of-your-machine:8443  EX http://192.168.1.2:8443
+              - Username: username-of-your-surveyor EX surveyor001
+              - Password: password-of-your-surveyor EX surveyor-password
+  - From the main menu, select "Get Blank Form"
+      - Select 'aether-walkthrough-microcensus'
+      - Press 'Get Selected'
+  - From the Main menu, select "Fill Blank Form"
+      - Select `aether-walkthrough-microcensus`
+      - Fill the form.
+      - From the Main Menu select "Send Finalized Form"
+- __View your submitted form on Gather__
+    - [http://gather.local/surveys/list/]
+- __Start Aether Connect__
+    - in your terminal navigate to aether-bootstrap
+        - `cd aether-bootstrap`
+    - Start AetherConnect
+        - `docker-compose -f ./docker-compose-connect.yml up -d`
+
+- __Bring Up and initialize CKAN__
+    - Run the CKAN setup script
+        - `scripts/setup_ckan.sh`
+    - In the terminal wait for the script to prompt you to create a user named admin. Remember the password you set. It may take a few minnutes for the CKAN containers to download and become ready.
+    - At the end of the script, it will output registration information including an API Key. This is also accessible from the CKAN portal.
+- __Configure the CKAN Dataportal__
+    - Login to CKAN with your fresh admin credentials
+        - [http://localhost:5000]
+            - username: _admin_
+            - password: _password_you_set_in_the_script_
+    - __Add 'ehademo' as an organization in the CKAN Data Portal__  
+      - In a browser, open [http://localhost:5000/organization]
+      - Create an organization with the name "eHADemo" (required)
+    - __Get your API Key__
+        - Open your administrative profile page
+            - [http://localhost:5000/user/admin]
+        - Copy your APIKey from the left status bar.
+- __Configure CKAN Consumer__
+    - __In your favorite text editor, open gather/aether-bootstrap/ckan-consumer/config/config.json__
+        - EX: `vi ./ckan-consumer/config/config.json`
+        - Change the API_KEY to the value from the Datportal. 
+- __Start CKAN Consumer__
+    - In the terminal, start the Consumer
+        - `scripts/run_ckan_consumer.sh`
+- __View Form Data in CKAN__
+    - Open Datasets
+        - [http://localhost:5000/dataset/]
+        - Click _"AetherWalkthroughMicrocensus"_
+        - Under _"Data and Resources"_ select the resource
+            - View the data definition
+            - Download a copy by clicking the url.
+            - View the data in your favorite CSV Viewer.
+            - WIP: (Viewing data online is currently blocked by an issue with the CKAN Datastore configuration)
+- __Simulate Other Submission to Aether__
+    - From aether-bootstrap, register fake resources:
+        - scripts/register_assets.sh
+    - Create 10 fake resources
+        - scripts/generate_assets.sh 10
+    - _NOTE: It can take up to a minute for a new auto-configurated data type to be detected and updated in CKAN_
+- __View Generated Data in CKAN__
+    - Open Datasets
+        - [http://localhost:5000/dataset/]
+
+- __CLEANUP__
+    - Take down bootstrap assets
+        - navigate to Aether Bootstrap in Gather Deploy Repo
+            - `cd aether-bootstrap`
+        - wipe ckan and consumer
+            - scripts/wipe_ckan.sh
+        - wipe AetherConnect
+            - `docker-compose -f ./docker-compose-connect.yml kill`
+            - `docker-compose -f ./docker-compose-connect.yml down`
+        - wipe Gather & Aether Kernel
+            - go up a level to the base gather folder
+                - `cd ..`
+            - take down the gather/kernel container
+                - `docker-compose down`
+            - Remove the aether .persistent_data folder:
+                - sudo rm -R aether-bootstrap/.persistent_data
