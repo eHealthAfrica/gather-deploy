@@ -77,7 +77,7 @@ services:
       - ./aether-bootstrap/.persistent_data/kernel/static:/static/kernel
       - ./aether-bootstrap/.persistent_data/odk/static:/static/odk
       - ./aether-bootstrap/.persistent_data/ui/static:/static/ui
-      - ../tmp/gather/static:/static/gather
+      - ./tmp/gather/static:/static/gather
       # Gather's static assets
 
     ports:
