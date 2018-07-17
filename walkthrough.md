@@ -41,13 +41,13 @@ __Components:__
             - _admin_
             - _adminadmin_
     - Create a new surveyor.
-          - Select Surveyors from the top bar.
-          - Create a new one.
-          - __This username and password will be used later in ODK Settings!!!__
+        - Select Surveyors from the top bar.
+        - Create a new one.
+        - __This username and password will be used later in ODK Settings!!!__
     - Create a new Survey.
-          - Add your surveyor to the survey.
-          - Upload the sample XForm from gather/aether-bootstrap//assets/forms/aether-walkthrough-microcensus.xls
-          - Save the Survey
+        - Add your surveyor to the survey.
+        - Upload the sample XForm from gather/aether-bootstrap//assets/forms/aether-walkthrough-microcensus.xls
+        - Save the Survey
 - __Submit Data From ODK Collect__:
   - On your mobile device open ODK Collect
       - Press the Three Dots icon in the upper right hand corner.
