@@ -50,13 +50,13 @@ __Components:__
           - Save the Survey
 - __Submit Data From ODK Collect__:
   - On your mobile device open ODK Collect
-          - Press the Three Dots icon in the upper right hand corner.
-          - Select "General Settings"
-          - Select "Server"
-          - Change the ODK Aggregate Settings:
-              - URL: http://the-ip-of-your-machine:8443  EX http://192.168.1.2:8443
-              - Username: username-of-your-surveyor EX surveyor001
-              - Password: password-of-your-surveyor EX surveyor-password
+      - Press the Three Dots icon in the upper right hand corner.
+      - Select "General Settings"
+      - Select "Server"
+      - Change the ODK Aggregate Settings:
+          - URL: http://the-ip-of-your-machine:8443  _EX http://192.168.1.2:8443_
+          - Username: username-of-your-surveyor _EX surveyor001_
+          - Password: password-of-your-surveyor _EX surveyor-password_
   - From the main menu, select "Get Blank Form"
       - Select 'aether-walkthrough-microcensus'
       - Press 'Get Selected'
