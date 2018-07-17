@@ -8,16 +8,16 @@ __Components:__
 - Aether CKAN Consumer
 - CKAN / CKAN Datastore extension
 
-#### __Requirements:__
-For Gather -> CKAN
-- Docker and Docker Compose
-- 8GB+ Ram
-- Ubuntu recent LTS or possibly Mac OS
-    - _Tested on 16.04_
-- An android device with ODK Collect
-- Knowledge of your host ip on the local network (for ODK submission)
+ __Requirements:__
+- _For Gather -> CKAN_
+    - Docker and Docker Compose
+    - 8GB+ Ram
+    - Ubuntu recent LTS or possibly Mac OS
+      - _Tested on 16.04_
+    - An android device with ODK Collect
+    - Knowledge of your host ip on the local network (for ODK submission)
 
-#### __End to End Instructions__:
+### __End to End Instructions__:
 - __Add the following to your /etc/hosts file.__
     - 127.0.0.1       localhost ui.aether.local kernel.aether.local gather.local
 - __Make sure you don't have old Docker Containers Running__
@@ -36,14 +36,14 @@ For Gather -> CKAN
     - `docker-compose up -d`
 - __Setup Gather__
     - In a browser, open:
-        - [http://gather.local]`
+        - [http://gather.local]
         - credentials:
-            - _admin-gather_
+            - _admin_
             - _adminadmin_
     - Create a new surveyor.
           - Select Surveyors from the top bar.
           - Create a new one.
-          - __This username and password will be use later in ODK Settings!!!__
+          - __This username and password will be used later in ODK Settings!!!__
     - Create a new Survey.
           - Add your surveyor to the survey.
           - Upload the sample XForm from gather/aether-bootstrap//assets/forms/aether-walkthrough-microcensus.xls
@@ -79,15 +79,15 @@ For Gather -> CKAN
     - At the end of the script, it will output registration information including an API Key. This is also accessible from the CKAN portal.
 - __Configure the CKAN Dataportal__
     - Login to CKAN with your fresh admin credentials
-        - [http://localhost:5000]
+        - (http://localhost:5000)
             - username: _admin_
             - password: _password_you_set_in_the_script_
     - __Add 'ehademo' as an organization in the CKAN Data Portal__  
-      - In a browser, open [http://localhost:5000/organization]
+      - In a browser, open (http://localhost:5000/organization)
       - Create an organization with the name "eHADemo" (required)
     - __Get your API Key__
         - Open your administrative profile page
-            - [http://localhost:5000/user/admin]
+            - (http://localhost:5000/user/admin)
         - Copy your APIKey from the left status bar.
 - __Configure CKAN Consumer__
     - __In your favorite text editor, open gather/aether-bootstrap/ckan-consumer/config/config.json__
@@ -98,7 +98,7 @@ For Gather -> CKAN
         - `scripts/run_ckan_consumer.sh`
 - __View Form Data in CKAN__
     - Open Datasets
-        - [http://localhost:5000/dataset/]
+        - (http://localhost:5000/dataset/)
         - Click _"AetherWalkthroughMicrocensus"_
         - Under _"Data and Resources"_ select the resource
             - View the data definition
@@ -106,6 +106,7 @@ For Gather -> CKAN
             - View the data in your favorite CSV Viewer.
             - WIP: (Viewing data online is currently blocked by an issue with the CKAN Datastore configuration)
 - __Simulate Other Submission to Aether__
+    - Instead of creating multiple forms or setting up entity extraction in the scope of this demo, we can have the Aether data mocker create some fake data to ensure that the autoconfiguration setting of the CKAN producer will be able to put anything we put into Aether into CKAN if we ask it to.
     - From aether-bootstrap, register fake resources:
         - scripts/register_assets.sh
     - Create 10 fake resources
