@@ -1,9 +1,16 @@
 version: "2.1"
 
 networks:
-  aether:
+  # docker network create gather_internal
+  gather:
     external:
-      name: aether_internal
+      name: gather_internal
+
+volumes:
+  # docker volume create gather_database_data
+  database_data:
+    external:
+      name: gather_database_data
 
 services:
 
@@ -13,10 +20,28 @@ services:
 
   db:
     extends:
-      file: aether-bootstrap/docker-compose-base.yml
+      file: ./aether-bootstrap/docker-compose-base.yml
       service: postgres-base
+    volumes:
+      - database_data:/var/lib/postgresql/data
     networks:
-      - aether
+      - gather
+
+  # ---------------------------------
+  # NGINX container
+  # ---------------------------------
+
+  nginx:
+    extends:
+      file: ./aether-bootstrap/docker-compose-base.yml
+      service: nginx-base
+    volumes:
+      # Gather config file
+      - ./conf/nginx/sites-enabled/gather.conf:/etc/nginx/sites-enabled/gather.conf
+      # gather favicon
+      - ./conf/gather.ico:/media/gather.ico
+    networks:
+      - gather
 
   # ---------------------------------
   # Aether kernel container
@@ -24,12 +49,13 @@ services:
 
   kernel:
     extends:
-      file: aether-bootstrap/docker-compose-base.yml
+      file: ./aether-bootstrap/docker-compose-base.yml
       service: kernel-base
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
-      aether:
+      gather:
         aliases:
           - kernel.aether.local
 
@@ -39,13 +65,15 @@ services:
 
   odk:
     extends:
-      file: aether-bootstrap/docker-compose-base.yml
+      file: ./aether-bootstrap/docker-compose-base.yml
       service: odk-base
     depends_on:
-      - db
-      - kernel
+      db:
+        condition: service_healthy
+      kernel:
+        condition: service_started
     networks:
-      aether:
+      gather:
         aliases:
           - odk.aether.local
 
@@ -55,13 +83,15 @@ services:
 
   ui:
     extends:
-      file: aether-bootstrap/docker-compose-base.yml
+      file: ./aether-bootstrap/docker-compose-base.yml
       service: ui-base
     depends_on:
-      - db
-      - kernel
+      db:
+        condition: service_healthy
+      kernel:
+        condition: service_started
     networks:
-      aether:
+      gather:
         aliases:
           - ui.aether.local
 
@@ -71,31 +101,16 @@ services:
 
   gather:
     extends:
-      file: docker-compose-base.yml
+      file: ./docker-compose-base.yml
       service: gather-base
     depends_on:
-      - db
-      # - gather-webpack
-      - kernel
-      - odk
+      db:
+        condition: service_healthy
+      kernel:
+        condition: service_started
+      odk:
+        condition: service_started
     networks:
-      aether:
+      gather:
         aliases:
           - gather.local
-
-
-  # ---------------------------------
-  # NGINX container
-  # ---------------------------------
-
-  nginx:
-    extends:
-      file: docker-compose-base.yml
-      service: nginx-base
-    depends_on:
-      - gather
-      - kernel
-      - odk
-      - ui
-    networks:
-      - aether
