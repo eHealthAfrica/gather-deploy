@@ -122,4 +122,5 @@ fi
 
 set -Eeo pipefail
 gen_env_file > .env
+cp .env aether-bootstrap/.env
 echo "[.env] file generated!"

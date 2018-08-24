@@ -1,10 +1,10 @@
 version: "2.1"
 
 networks:
-  # docker network create gather_internal
+  # docker network create aether_internal
   gather:
     external:
-      name: gather_internal
+      name: aether_internal
 
 volumes:
   # docker volume create gather_database_data
@@ -40,6 +40,16 @@ services:
       - ./conf/nginx/sites-enabled/gather.conf:/etc/nginx/sites-enabled/gather.conf
       # gather favicon
       - ./conf/gather.ico:/media/gather.ico
+    depends_on:
+      kernel:
+        condition: service_healthy
+      odk:
+        condition: service_healthy
+      ui:
+        condition: service_healthy
+      gather:
+        condition: service_started
+
     networks:
       - gather
 

@@ -25,7 +25,7 @@
 # ./gather-start.sh
 
 {
-    docker network create gather_internal
+    docker network create aether_internal
 } || { # catch
     echo "gather_internal network is ready."
 }
