@@ -1,10 +1,10 @@
 version: "2.1"
 
 networks:
-  # docker network create gather_internal
+  # docker network create aether_internal
   gather:
     external:
-      name: gather_internal
+      name: aether_internal
 
 volumes:
   # docker volume create gather_database_data
