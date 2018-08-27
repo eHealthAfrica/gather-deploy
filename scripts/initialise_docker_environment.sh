@@ -18,7 +18,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-docker network create gather_internal 2>/dev/null || true
-docker volume create --name=gather_database_data 2>/dev/null || true
-./scripts/generate_env_vars.sh
 
+git submodule update --remote
+
+docker network create --name=aether_internal      2>/dev/null || true
+docker volume  create --name=gather_database_data 2>/dev/null || true
+
+./scripts/generate_env_vars.sh

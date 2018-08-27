@@ -1,2 +1,36 @@
+### Visual Studio Code ###
+.vscode
+
+### Eclipse ###
+.project
+.classpath
+.settings
+
+### IntelliJ IDEA ###
+.idea
+*.iml
+*.ipr
+*.iws
+out
+
+### OSX ###
 .DS_Store
+.AppleDouble
+.LSOverride
+
+### Vim ###
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+
+### Gather specific ###
+
+# Persistent volumes
+.persistent_data
+
+# Environment variables
 .env

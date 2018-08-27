@@ -51,3 +51,8 @@ services:
     ports:
       - "8005:8005"
     command: start
+    healthcheck:
+      test: /code/entrypoint.sh health
+      interval: 5s
+      timeout: 3s
+      retries: 30

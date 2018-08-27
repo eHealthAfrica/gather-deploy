@@ -24,16 +24,6 @@
 # Example:
 # ./gather-start.sh
 
-{
-    docker network create gather_internal
-} || { # catch
-    echo "gather_internal network is ready."
-}
-
-{
-    docker volume create gather_database_data
-} || { # catch
-    echo "gather_database_data volume is ready."
-}
+./scripts/initialise_docker_environment.sh
 
 docker-compose up
