@@ -1,10 +1,10 @@
 version: "2.1"
 
 networks:
-  # docker network create gather_internal
+  # docker network create aether_internal
   gather:
     external:
-      name: gather_internal
+      name: aether_internal
 
 volumes:
   # docker volume create gather_database_data
@@ -24,22 +24,6 @@ services:
       service: postgres-base
     volumes:
       - database_data:/var/lib/postgresql/data
-    networks:
-      - gather
-
-  # ---------------------------------
-  # NGINX container
-  # ---------------------------------
-
-  nginx:
-    extends:
-      file: ./aether-bootstrap/docker-compose-base.yml
-      service: nginx-base
-    volumes:
-      # Gather config file
-      - ./conf/nginx/sites-enabled/gather.conf:/etc/nginx/sites-enabled/gather.conf
-      # gather favicon
-      - ./conf/gather.ico:/media/gather.ico
     networks:
       - gather
 
@@ -114,3 +98,26 @@ services:
       gather:
         aliases:
           - gather.local
+
+  # ---------------------------------
+  # NGINX container
+  # ---------------------------------
+
+  nginx:
+    extends:
+      file: ./aether-bootstrap/docker-compose-base.yml
+      service: nginx-base
+    volumes:
+      # Gather config file
+      - ./conf/nginx/sites-enabled/gather.conf:/etc/nginx/sites-enabled/gather.extra.conf
+    depends_on:
+      kernel:
+        condition: service_healthy
+      odk:
+        condition: service_healthy
+      ui:
+        condition: service_healthy
+      gather:
+        condition: service_healthy
+    networks:
+      - gather
