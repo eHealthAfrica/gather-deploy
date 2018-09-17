@@ -10,7 +10,7 @@ volumes:
   # docker volume create gather_database_data
   database_data:
     external:
-      name: gather_database_data
+      name: aether_database_data
 
 services:
 
