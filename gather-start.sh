@@ -24,6 +24,4 @@
 # Example:
 # ./gather-start.sh
 
-./scripts/initialise_docker_environment.sh
-
 docker-compose up

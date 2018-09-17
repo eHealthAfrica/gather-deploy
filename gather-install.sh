@@ -19,10 +19,11 @@
 # under the License.
 #
 
-./scripts/generate_env_vars.sh
-cp .env aether-bootstrap/.env
-git submodule update --remote
-docker-compose pull
-./aether-bootstrap/scripts/initialise_docker_environment.sh
+# This script can be used to create the docker network and the database volume.
+#
+# Example:
+# ./gather-start.sh
 
+./scripts/initialise_docker_environment.sh
 
+echo "Finished"
