@@ -20,8 +20,9 @@
 #
 
 ./scripts/generate_env_vars.sh
-cp .env aether-bootstrap/.env
+git submodule init
 git submodule update --remote
+cp .env aether-bootstrap/.env
 docker-compose pull
 ./aether-bootstrap/scripts/initialise_docker_environment.sh
 
