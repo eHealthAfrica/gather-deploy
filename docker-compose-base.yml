@@ -40,9 +40,8 @@ services:
       PGUSER: postgres
 
       # assets variables
-      CSV_HEADER_RULES: remove-prefix;payload.,remove-prefix;None.,replace;.;:;
-      CSV_HEADER_RULES_SEP: ;
-      CSV_MAX_ROWS_SIZE: 0
+      EXPORT_FORMAT: xlsx
+      EXPORT_MAX_ROWS_SIZE: 0
 
       WEB_SERVER_PORT: 8005
     volumes:
@@ -51,8 +50,3 @@ services:
     ports:
       - "8005:8005"
     command: start
-    healthcheck:
-      test: /code/entrypoint.sh health
-      interval: 5s
-      timeout: 3s
-      retries: 30
