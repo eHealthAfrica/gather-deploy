@@ -21,9 +21,6 @@
 
 # This script can be used to generate an ".env" for local development with
 # docker compose.
-#
-# Example:
-# ./scripts/generate_env_vars.sh
 
 check_openssl () {
     which openssl > /dev/null
@@ -60,7 +57,7 @@ gen_env_file () {
 # ------------------------------------------------------------------
 # Gather
 # ==================================================================
-GATHER_VERSION=3.0.0-rc
+GATHER_VERSION=3.0.0
 
 GATHER_ADMIN_USERNAME=admin
 GATHER_ADMIN_PASSWORD=adminadmin
@@ -72,7 +69,7 @@ GATHER_DB_PASSWORD=$(gen_random_string)
 # ------------------------------------------------------------------
 # Aether
 # ==================================================================
-AETHER_VERSION=1.0.0-rc
+AETHER_VERSION=1.0.0
 # ------------------------------------------------------------------
 
 
