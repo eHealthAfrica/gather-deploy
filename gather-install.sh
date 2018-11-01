@@ -19,10 +19,7 @@
 # under the License.
 #
 
-# This script can be used to create the docker network and the database volume.
-#
-# Example:
-# ./gather-start.sh
+set -Eeuo pipefail
 
 ./scripts/initialise_docker_environment.sh
 
