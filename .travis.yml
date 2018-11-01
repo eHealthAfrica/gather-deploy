@@ -6,12 +6,11 @@ python:
 services:
   - docker
 
-before_script:
-  - ./scripts/initialise_docker_environment.sh
+install: true
 
 script:
-  # just check that the images exist
-  - docker-compose pull
+  # just check that the script works
+  - ./scripts/initialise_docker_environment.sh
 
 after_script:
   - ./scripts/kill_all.sh

@@ -18,12 +18,18 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+set -Eeuo pipefail
+
+echo "Initializing Gather environment."
 
 ./scripts/generate_env_vars.sh
+
 git submodule init
 git submodule update --remote
+
 cp .env aether-bootstrap/.env
+
 docker-compose pull
 ./aether-bootstrap/scripts/initialise_docker_environment.sh
 
-
+echo "Done."
