@@ -6,7 +6,7 @@ This repo uses the `aether-bootstrap` repo as a submodule. This means that
 you need to use the following command to clone this repo:
 
 ```bash
-git clone --recurse-submodules
+git clone --recurse-submodules git@github.com:eHealthAfrica/gather-deploy.git
 ```
 
 You will need to add the following lines to your `/etc/hosts` file:
