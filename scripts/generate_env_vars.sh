@@ -90,7 +90,7 @@ KERNEL_READONLY_DB_PASSWORD=$(gen_random_string)
 # Aether Producer
 # ==================================================================
 PRODUCER_ADMIN_USER=admin
-PRODUCER_ADMIN_PW=adminadmin
+PRODUCER_ADMIN_PW=$(gen_random_string)
 # ------------------------------------------------------------------
 
 # ------------------------------------------------------------------
