@@ -104,3 +104,14 @@ services:
       - ./conf/nginx/sites-enabled/gather.conf:/etc/nginx/sites-enabled/gather.extra.conf
     networks:
       - gather
+
+  # ---------------------------------
+  # Minio container
+  # ---------------------------------
+
+  minio:
+    extends:
+      file: ./aether-bootstrap/docker-compose-base.yml
+      service: minio-base
+    networks:
+      - gather
