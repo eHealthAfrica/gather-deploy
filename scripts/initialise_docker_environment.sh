@@ -24,8 +24,14 @@ echo "Initializing Gather environment."
 
 ./scripts/generate_env_vars.sh
 
-git submodule init
-git submodule update --remote
+# Modified to force tag 1.4.0
+#
+# git submodule init
+# git submodule update --remote
+git fetch && git fetch --tags
+git checkout 1.4.0
+popd > /dev/null
+# end mod
 
 cp .env aether-bootstrap/.env
 
