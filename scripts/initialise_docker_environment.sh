@@ -28,6 +28,7 @@ echo "Initializing Gather environment."
 #
 # git submodule init
 # git submodule update --remote
+pushd aether-bootstrap > /dev/null
 git fetch && git fetch --tags
 git checkout 1.4.0
 popd > /dev/null
