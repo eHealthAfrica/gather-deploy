@@ -29,8 +29,8 @@ Session.vim
 
 ### Gather specific ###
 
-# Persistent volumes
-.persistent_data
+# static content
+.www
 
 # Environment variables
 .env

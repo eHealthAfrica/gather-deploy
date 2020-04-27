@@ -18,25 +18,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
 set -Eeuo pipefail
 
-echo "Initializing Gather environment."
-
-./scripts/generate_env_vars.sh
-
-# Modified to force tag 1.4.0
-#
-# git submodule init
-# git submodule update --remote
-pushd aether-bootstrap > /dev/null
-git fetch && git fetch --tags
-git checkout 1.4.0
-popd > /dev/null
-# end mod
-
-cp .env aether-bootstrap/.env
-
-docker-compose pull
-./aether-bootstrap/scripts/initialise_docker_environment.sh
-
-echo "Done."
+docker-compose kill

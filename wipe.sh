@@ -21,6 +21,7 @@
 
 set -Eeuo pipefail
 
-./scripts/initialise_docker_environment.sh
+docker-compose kill
+docker-compose down -v
 
-echo "Finished"
+rm -Rf .www .env

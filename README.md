@@ -2,12 +2,14 @@
 
 > Docker and Helm files for Gather, to enable easy installation and deployment.
 
-This repo uses the `aether-bootstrap` repo as a submodule. This means that
-you need to use the following command to clone this repo:
+This repository enables a mono-tenant gather instance with only the basis of
+the aether platform.
 
-```bash
-git clone --recurse-submodules git@github.com:eHealthAfrica/gather-deploy.git
-```
+If you need a multi-tenant instance or enable more features like
+CKAN or Elasticsearch integration you may visit:
+[aether-bootstrap](https://github.com/eHealthAfrica/aether-bootstrap).
+
+## Set-up instructions
 
 You will need to add the following lines to your `/etc/hosts` file:
 
@@ -16,23 +18,26 @@ You will need to add the following lines to your `/etc/hosts` file:
 127.0.0.1    gather.local
 
 # Aether Suite
-127.0.0.1    kernel.aether.local odk.aether.local ui.aether.local
+127.0.0.1    aether.local
 ```
 
-Once that's done, you can just start Gather,
-and access it at [http://gather.local](http://gather.local).
+Execute the following command to initialize your local instance
 
 ```bash
-./gather-start.sh
+./setup.sh
 ```
 
-### Update Gather and Aether release version
+## Start instructions
 
-Occasionally you will need to regenerate the `.env` file with the new and
-required environment variables that include the last Gather and Aether releases.
-You need to use the following command to do that (favorite) or update the file
-manually:
+Once that's done, you can just start Gather:
 
 ```bash
-./scripts/generate_env_vars.sh
+./start.sh
 ```
+
+Access it at [http://gather.local](http://gather.local).
+
+Use these credentials to log in:
+
+- *Username*: **user** (`GATHER_USERNAME`)
+- *Password*: **password** (`GATHER_PASSWORD`)
