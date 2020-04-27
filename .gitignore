@@ -29,8 +29,5 @@ Session.vim
 
 ### Gather specific ###
 
-# static content
-.www
-
 # Environment variables
 .env

@@ -8,6 +8,12 @@ networks:
       config:
         - subnet: 192.168.5.0/24
 
+volumes:
+  static_kernel:
+  static_odk:
+  static_ui:
+  static_gather:
+
 services:
 
   # ---------------------------------
@@ -54,7 +60,10 @@ services:
       - ./conf/nginx/sites-enabled:/etc/nginx/sites-enabled
 
       # static folders per container
-      - ./.www:/var/www/static
+      - static_kernel:/var/www/static/kernel
+      - static_odk:/var/www/static/odk
+      - static_ui:/var/www/static/ui
+      - static_gather:/var/www/static/gather
     ports:
       - 80:80
     healthcheck:
@@ -118,7 +127,7 @@ services:
 
       WEB_SERVER_PORT: 8100
     volumes:
-      - ./.www/kernel:/var/www/static
+      - static_kernel:/var/www/static
     command: start
     networks:
       - gather
@@ -173,7 +182,7 @@ services:
 
       WEB_SERVER_PORT: 8102
     volumes:
-      - ./.www/odk:/var/www/static
+      - static_odk:/var/www/static
     command: start
     networks:
       - gather
@@ -217,7 +226,7 @@ services:
 
       WEB_SERVER_PORT: 8104
     volumes:
-      - ./.www/ui:/var/www/static
+      - static_ui:/var/www/static
     command: start
     networks:
       - gather
@@ -269,7 +278,7 @@ services:
 
       WEB_SERVER_PORT: 8105
     volumes:
-      - ./.www/gather:/var/www/static
+      - static_gather:/var/www/static
     command: start
     networks:
       - gather

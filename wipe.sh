@@ -24,4 +24,4 @@ set -Eeuo pipefail
 docker-compose kill
 docker-compose down -v
 
-rm -Rf .www .env
+rm .env
