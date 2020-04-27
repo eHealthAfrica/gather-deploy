@@ -1,8 +1,8 @@
-sudo: required
+os: linux
+dist: bionic
 language: python
 python:
-  - '3.6'
-
+  - '3.7'
 services:
   - docker
 
@@ -10,4 +10,4 @@ install: true
 
 script:
   # just check that the script works
-  - ./scripts/initialise_docker_environment.sh
+  - ./setup.sh
