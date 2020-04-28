@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2018 by eHealth Africa : http://www.eHealthAfrica.org
+# Copyright (C) 2020 by eHealth Africa : http://www.eHealthAfrica.org
 #
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
@@ -21,6 +21,4 @@
 
 set -Eeuo pipefail
 
-./scripts/initialise_docker_environment.sh
-
-echo "Finished"
+docker-compose kill

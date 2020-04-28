@@ -1,117 +1,293 @@
-version: "2.1"
+version: "3"
 
 networks:
-  # docker network create aether_internal
   gather:
-    external:
-      name: aether_internal
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.5.0/24
 
 volumes:
-  # docker volume create gather_database_data
-  database_data:
-    external:
-      name: aether_database_data
+  static_kernel:
+  static_odk:
+  static_ui:
+  static_gather:
 
 services:
 
   # ---------------------------------
-  # Database container
+  # Databases
   # ---------------------------------
 
-  db:
-    extends:
-      file: ./aether-bootstrap/docker-compose-base.yml
-      service: postgres-base
-    volumes:
-      - database_data:/var/lib/postgresql/data
+  database:
+    image: postgres:10-alpine
+    environment:
+      PGUSER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: pg_isready
+      interval: 5s
+      timeout: 3s
+      retries: 30
     networks:
       - gather
 
-  # ---------------------------------
-  # Aether kernel container
-  # ---------------------------------
-
-  kernel:
-    extends:
-      file: ./aether-bootstrap/docker-compose-base.yml
-      service: kernel-base
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      gather:
-        aliases:
-          - kernel.aether.local
-
-  # ---------------------------------
-  # ODK Adapter container
-  # ---------------------------------
-
-  odk:
-    extends:
-      file: ./aether-bootstrap/docker-compose-base.yml
-      service: odk-base
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      gather:
-        aliases:
-          - odk.aether.local
-
-  # ---------------------------------
-  # Aether UI container
-  # ---------------------------------
-
-  ui:
-    extends:
-      file: ./aether-bootstrap/docker-compose-base.yml
-      service: ui-base
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      gather:
-        aliases:
-          - ui.aether.local
-
-  # ---------------------------------
-  # Gather container
-  # ---------------------------------
-
-  gather:
-    extends:
-      file: ./docker-compose-base.yml
-      service: gather-base
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      gather:
-        aliases:
-          - gather.local
-
-  # ---------------------------------
-  # NGINX container
-  # ---------------------------------
-
-  nginx:
-    extends:
-      file: ./aether-bootstrap/docker-compose-base.yml
-      service: nginx-base
-    volumes:
-      # Gather config file
-      - ./conf/nginx/sites-enabled/gather.conf:/etc/nginx/sites-enabled/gather.extra.conf
-    networks:
-      - gather
 
   # ---------------------------------
   # Minio container
   # ---------------------------------
 
   minio:
-    extends:
-      file: ./aether-bootstrap/docker-compose-base.yml
-      service: minio-base
+    image: minio/minio
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_STORAGE_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_STORAGE_SECRET_KEY}
+    command: minio server --quiet --address minio:9090 /data
     networks:
       - gather
+
+
+  # ---------------------------------
+  # NGINX
+  # ---------------------------------
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      # local setup
+      - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./conf/nginx/sites-enabled:/etc/nginx/sites-enabled
+
+      # static folders per container
+      - static_kernel:/var/www/static/kernel
+      - static_odk:/var/www/static/odk
+      - static_ui:/var/www/static/ui
+      - static_gather:/var/www/static/gather
+    ports:
+      - 80:80
+    healthcheck:
+      test: nginx -t
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      gather:
+        ipv4_address: 192.168.5.10
+    extra_hosts:
+      - aether.local:127.0.0.1
+      - gather.local:127.0.0.1
+
+
+  # ---------------------------------
+  # Aether kernel container
+  # ---------------------------------
+
+  kernel:
+    image: ehealthafrica/aether-kernel:${AETHER_VERSION:-alpha}
+    environment:
+      CSRF_COOKIE_DOMAIN: aether.local
+      DJANGO_SECRET_KEY: ${KERNEL_DJANGO_SECRET_KEY}
+
+      LOGGING_FORMATTER: verbose
+      HTML_SELECT_CUTOFF: 10
+
+      BUCKET_NAME: kernel
+      DJANGO_STORAGE_BACKEND: minio
+      MINIO_STORAGE_ACCESS_KEY: ${MINIO_STORAGE_ACCESS_KEY}
+      MINIO_STORAGE_SECRET_KEY: ${MINIO_STORAGE_SECRET_KEY}
+      MINIO_STORAGE_ENDPOINT: minio:9090
+      MINIO_STORAGE_MEDIA_USE_PRESIGNED: null
+      MINIO_STORAGE_MEDIA_URL: http://minio:9090/kernel
+      MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET: "true"
+      MINIO_STORAGE_AUTO_CREATE_MEDIA_POLICY: "true"
+
+      APP_NAME: Aether Kernel
+      APP_URL: /kernel
+      STATIC_URL: /static/kernel/
+
+      ADMIN_USERNAME: ${KERNEL_ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${KERNEL_ADMIN_PASSWORD}
+      ADMIN_TOKEN: ${KERNEL_ADMIN_TOKEN}
+
+      DB_NAME: aether-kernel
+      PGHOST: database
+      PGPASSWORD: ${KERNEL_DB_PASSWORD}
+      PGPORT: 5432
+      PGUSER: postgres
+
+      # Export
+      EXPORT_CSV_ESCAPE: "\\"
+      EXPORT_CSV_QUOTES: "\""
+      EXPORT_CSV_SEPARATOR: ","
+      EXPORT_DATA_FORMAT: split
+      EXPORT_HEADER_CONTENT: labels
+      EXPORT_HEADER_SEPARATOR: /
+      EXPORT_HEADER_SHORTEN: "no"
+
+      WEB_SERVER_PORT: 8100
+    volumes:
+      - static_kernel:/var/www/static
+    command: start
+    networks:
+      - gather
+    extra_hosts:
+      - aether.local:192.168.5.10
+      - gather.local:192.168.5.10
+    depends_on:
+      - database
+      - nginx
+      - minio
+
+
+  # ---------------------------------
+  # ODK Adapter container
+  # ---------------------------------
+
+  odk:
+    image: ehealthafrica/aether-odk:${AETHER_VERSION:-alpha}
+    environment:
+      CSRF_COOKIE_DOMAIN: aether.local
+      DJANGO_SECRET_KEY: ${ODK_DJANGO_SECRET_KEY}
+
+      LOGGING_FORMATTER: verbose
+      HTML_SELECT_CUTOFF: 10
+
+      BUCKET_NAME: odk
+      DJANGO_STORAGE_BACKEND: minio
+      MINIO_STORAGE_ACCESS_KEY: ${MINIO_STORAGE_ACCESS_KEY}
+      MINIO_STORAGE_SECRET_KEY: ${MINIO_STORAGE_SECRET_KEY}
+      MINIO_STORAGE_ENDPOINT: minio:9090
+      MINIO_STORAGE_MEDIA_USE_PRESIGNED: null
+      MINIO_STORAGE_MEDIA_URL: http://minio:9090/odk
+      MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET: "true"
+      MINIO_STORAGE_AUTO_CREATE_MEDIA_POLICY: "true"
+
+      APP_NAME: Aether ODK
+      APP_URL: /odk
+      STATIC_URL: /static/odk/
+
+      ADMIN_USERNAME: ${ODK_ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ODK_ADMIN_PASSWORD}
+      ADMIN_TOKEN: ${ODK_ADMIN_TOKEN}
+
+      AETHER_KERNEL_TOKEN: ${KERNEL_ADMIN_TOKEN}
+      AETHER_KERNEL_URL: http://aether.local/kernel
+
+      DB_NAME: aether-odk
+      PGHOST: database
+      PGPASSWORD: ${ODK_DB_PASSWORD}
+      PGPORT: 5432
+      PGUSER: postgres
+
+      WEB_SERVER_PORT: 8102
+    volumes:
+      - static_odk:/var/www/static
+    command: start
+    networks:
+      - gather
+    extra_hosts:
+      - aether.local:192.168.5.10
+      - gather.local:192.168.5.10
+    depends_on:
+      - database
+      - nginx
+      - minio
+      - kernel
+
+
+  # ---------------------------------
+  # Aether UI container
+  # ---------------------------------
+
+  ui:
+    image: ehealthafrica/aether-ui:${AETHER_VERSION:-alpha}
+    environment:
+      CSRF_COOKIE_DOMAIN: aether.local
+      DJANGO_SECRET_KEY: ${UI_DJANGO_SECRET_KEY}
+
+      LOGGING_FORMATTER: verbose
+      HTML_SELECT_CUTOFF: 10
+
+      APP_NAME: Aether
+      STATIC_URL: /static/ui/
+
+      ADMIN_USERNAME: ${UI_ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${UI_ADMIN_PASSWORD}
+
+      AETHER_KERNEL_TOKEN: ${KERNEL_ADMIN_TOKEN}
+      AETHER_KERNEL_URL: http://aether.local/kernel
+
+      DB_NAME: aether-ui
+      PGHOST: database
+      PGPASSWORD: ${UI_DB_PASSWORD}
+      PGPORT: 5432
+      PGUSER: postgres
+
+      WEB_SERVER_PORT: 8104
+    volumes:
+      - static_ui:/var/www/static
+    command: start
+    networks:
+      - gather
+    extra_hosts:
+      - aether.local:192.168.5.10
+      - gather.local:192.168.5.10
+    depends_on:
+      - database
+      - nginx
+      - minio
+      - kernel
+
+
+  # ---------------------------------
+  # Gather container
+  # ---------------------------------
+
+  gather:
+    image: ehealthafrica/gather:${GATHER_VERSION:-alpha}
+    environment:
+      CSRF_COOKIE_DOMAIN: gather.local
+      DJANGO_SECRET_KEY: ${GATHER_DJANGO_SECRET_KEY}
+
+      LOGGING_FORMATTER: verbose
+      HTML_SELECT_CUTOFF: 10
+
+      APP_NAME: Gather
+      STATIC_URL: /static/gather/
+
+      ADMIN_USERNAME: ${GATHER_ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${GATHER_ADMIN_PASSWORD}
+
+      EXTERNAL_APPS: aether-kernel,aether-odk
+
+      AETHER_KERNEL_TOKEN: ${KERNEL_ADMIN_TOKEN}
+      AETHER_KERNEL_URL: http://aether.local/kernel
+
+      AETHER_ODK_TOKEN: ${ODK_ADMIN_TOKEN}
+      AETHER_ODK_URL: http://aether.local/odk
+
+      DB_NAME: gather
+      PGHOST: database
+      PGPASSWORD: ${GATHER_DB_PASSWORD}
+      PGPORT: 5432
+      PGUSER: postgres
+
+      # With offline export no restrictions
+      EXPORT_MAX_ROWS_SIZE: 0
+
+      WEB_SERVER_PORT: 8105
+    volumes:
+      - static_gather:/var/www/static
+    command: start
+    networks:
+      - gather
+    extra_hosts:
+      - aether.local:192.168.5.10
+      - gather.local:192.168.5.10
+    depends_on:
+      - database
+      - nginx
+      - minio
+      - kernel
+      - odk

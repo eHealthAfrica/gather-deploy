@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2018 by eHealth Africa : http://www.eHealthAfrica.org
+# Copyright (C) 2020 by eHealth Africa : http://www.eHealthAfrica.org
 #
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
@@ -18,25 +18,28 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
 set -Eeuo pipefail
 
 echo "Initializing Gather environment."
-
 ./scripts/generate_env_vars.sh
 
-# Modified to force tag 1.4.0
-#
-# git submodule init
-# git submodule update --remote
-pushd aether-bootstrap > /dev/null
-git fetch && git fetch --tags
-git checkout 1.4.0
-popd > /dev/null
-# end mod
-
-cp .env aether-bootstrap/.env
+source .env
 
 docker-compose pull
-./aether-bootstrap/scripts/initialise_docker_environment.sh
 
-echo "Done."
+docker-compose up -d database minio
+sleep 2
+
+services=( kernel odk ui gather )
+for service in "${services[@]}"; do
+  docker-compose run --rm $service setup
+
+  docker-compose run --rm $service manage create_user \
+      -u=$GATHER_USERNAME \
+      -p=$GATHER_PASSWORD
+done
+
+docker-compose kill
+
+echo "Finished"
