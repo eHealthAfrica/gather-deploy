@@ -386,8 +386,6 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: 12
 
-      CONSUMERS_CONFIG_FILE: '/code/conf/consumers.json'
-      AUTO_CONFIG_CONSUMERS: "true"
       TENANCY_HEADER: 'X-Oauth-realm'
 
       # With offline export no restrictions

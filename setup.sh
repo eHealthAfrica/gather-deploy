@@ -36,6 +36,7 @@ for service in "${services[@]}"; do
   docker compose run --rm $service setup
 
   docker compose run --rm $service manage create_user \
+      -r=$DEFAULT_REALM \
       -u=$GATHER_USERNAME \
       -p=$GATHER_PASSWORD
 done
