@@ -28,7 +28,7 @@ source .env
 
 docker compose pull
 
-docker compose up -d database minio
+docker compose up -d database minio redis
 sleep 2
 
 services=( kernel odk ui gather )
