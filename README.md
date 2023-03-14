@@ -11,7 +11,7 @@ CKAN or Elasticsearch integration you may visit:
 
 ## Set-up instructions
 
-You will need to add the following lines to your `/etc/hosts` file:
+You will need to add the following lines to your `/etc/hosts` or `C:\Windows\System32\Drivers\etc\hosts` file:
 
 ```text
 # Gather

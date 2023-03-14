@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2020 by eHealth Africa : http://www.eHealthAfrica.org
+# Copyright (C) 2023 by eHealth Africa : http://www.eHealthAfrica.org
 #
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
@@ -45,19 +45,19 @@ gen_env_file () {
 #
 # Verify correct substitution with:
 #
-#   docker-compose config
+#   docker compose config
 #
 # If variables are newly added or enabled,
 # please restart the images to pull in changes:
 #
-#   docker-compose restart {container-name}
+#   docker compose restart {container-name}
 #
 
 
 # ------------------------------------------------------------------
 # Gather
 # ==================================================================
-GATHER_VERSION=3.4.2
+GATHER_VERSION=3.6.6
 
 GATHER_USERNAME=user
 GATHER_PASSWORD=password
@@ -71,7 +71,7 @@ GATHER_DB_PASSWORD=$(gen_random_string)
 # ------------------------------------------------------------------
 # Aether
 # ==================================================================
-AETHER_VERSION=1.7.2
+AETHER_VERSION=2.2.10
 # ------------------------------------------------------------------
 
 
@@ -112,6 +112,31 @@ UI_DB_PASSWORD=$(gen_random_string)
 # ==================================================================
 MINIO_STORAGE_ACCESS_KEY=$(gen_random_string)
 MINIO_STORAGE_SECRET_KEY=$(gen_random_string)
+# ------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------
+# Multitenancy
+# ==================================================================
+DEFAULT_REALM=gather
+REALM_COOKIE=gather-realm
+MULTITENANCY=yes
+# ------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------
+# Redis
+# ==================================================================
+REDIS_PASSWORD=$(gen_random_string)
+# ------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------
+# Other
+# ==================================================================
+ENABLE_CACHE=true
+ENABLE_DB_POOL=
+ENABLE_PROFILING=
 # ------------------------------------------------------------------
 
 EOF

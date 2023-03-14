@@ -21,7 +21,7 @@ services:
   # ---------------------------------
 
   database:
-    image: postgres:10-alpine
+    image: postgres:15-alpine
     environment:
       PGUSER: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -44,6 +44,28 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_STORAGE_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_STORAGE_SECRET_KEY}
     command: minio server --quiet --address minio:9090 /data
+    networks:
+      - gather
+
+
+  # ---------------------------------
+  # REDIS container
+  # ---------------------------------
+
+  redis:
+    image: redis:alpine
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --notify-keyspace-events KEA
+      --appendonly yes
+      --auto-aof-rewrite-percentage 100
+      --auto-aof-rewrite-min-size 64mb
+    healthcheck:
+      test: redis-cli ping
+      interval: 2s
+      timeout: 3s
+      retries: 30
     networks:
       - gather
 
@@ -106,6 +128,10 @@ services:
       APP_URL: /kernel
       STATIC_URL: /static/kernel/
 
+      MULTITENANCY: ${MULTITENANCY}
+      DEFAULT_REALM: ${DEFAULT_REALM}
+      REALM_COOKIE: ${REALM_COOKIE}
+
       ADMIN_USERNAME: ${KERNEL_ADMIN_USERNAME}
       ADMIN_PASSWORD: ${KERNEL_ADMIN_PASSWORD}
       ADMIN_TOKEN: ${KERNEL_ADMIN_TOKEN}
@@ -115,6 +141,17 @@ services:
       PGPASSWORD: ${KERNEL_DB_PASSWORD}
       PGPORT: 5432
       PGUSER: postgres
+
+      ENABLE_CONNECTION_POOL: ${ENABLE_DB_POOL}
+      DB_POOL_INTERNAL: ${ENABLE_DB_POOL}
+
+      DJANGO_USE_CACHE: ${ENABLE_CACHE}
+      REDIS_DJANGO_CACHE: ${ENABLE_CACHE}
+      REDIS_SESSION_CACHE: ${ENABLE_CACHE}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: 6379
+      REDIS_DB: 0
 
       # Export
       EXPORT_CSV_ESCAPE: "\\"
@@ -138,6 +175,35 @@ services:
       - database
       - nginx
       - minio
+      - redis
+
+
+  # ---------------------------------
+  # Entity Extractor
+  # ---------------------------------
+
+  exm-base:
+    image: ehealthafrica/aether-exm:${AETHER_VERSION:-alpha}
+    environment:
+      DEFAULT_REALM: ${DEFAULT_REALM}
+      REALM_COOKIE: ${REALM_COOKIE}
+
+      # use internal url, this happens behind the curtains
+      AETHER_KERNEL_URL: http://aether.local/kernel
+      AETHER_KERNEL_TOKEN: ${KERNEL_ADMIN_TOKEN}
+
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+    command: start
+    networks:
+      - gather
+    extra_hosts:
+      - aether.local:192.168.5.10
+      - gather.local:192.168.5.10
+    depends_on:
+      - redis
 
 
   # ---------------------------------
@@ -167,6 +233,10 @@ services:
       APP_URL: /odk
       STATIC_URL: /static/odk/
 
+      MULTITENANCY: ${MULTITENANCY}
+      DEFAULT_REALM: ${DEFAULT_REALM}
+      REALM_COOKIE: ${REALM_COOKIE}
+
       ADMIN_USERNAME: ${ODK_ADMIN_USERNAME}
       ADMIN_PASSWORD: ${ODK_ADMIN_PASSWORD}
       ADMIN_TOKEN: ${ODK_ADMIN_TOKEN}
@@ -180,6 +250,17 @@ services:
       PGPORT: 5432
       PGUSER: postgres
 
+      ENABLE_CONNECTION_POOL: ${ENABLE_DB_POOL}
+      DB_POOL_INTERNAL: ${ENABLE_DB_POOL}
+
+      DJANGO_USE_CACHE: ${ENABLE_CACHE}
+      REDIS_DJANGO_CACHE: ${ENABLE_CACHE}
+      REDIS_SESSION_CACHE: ${ENABLE_CACHE}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: 6379
+      REDIS_DB: 4
+
       WEB_SERVER_PORT: 8102
     volumes:
       - static_odk:/var/www/static
@@ -192,6 +273,7 @@ services:
     depends_on:
       - database
       - nginx
+      - redis
       - minio
       - kernel
 
@@ -212,6 +294,10 @@ services:
       APP_NAME: Aether
       STATIC_URL: /static/ui/
 
+      MULTITENANCY: ${MULTITENANCY}
+      DEFAULT_REALM: ${DEFAULT_REALM}
+      REALM_COOKIE: ${REALM_COOKIE}
+
       ADMIN_USERNAME: ${UI_ADMIN_USERNAME}
       ADMIN_PASSWORD: ${UI_ADMIN_PASSWORD}
 
@@ -223,6 +309,17 @@ services:
       PGPASSWORD: ${UI_DB_PASSWORD}
       PGPORT: 5432
       PGUSER: postgres
+
+      ENABLE_CONNECTION_POOL: ${ENABLE_DB_POOL}
+      DB_POOL_INTERNAL: ${ENABLE_DB_POOL}
+
+      DJANGO_USE_CACHE: ${ENABLE_CACHE}
+      REDIS_DJANGO_CACHE: ${ENABLE_CACHE}
+      REDIS_SESSION_CACHE: ${ENABLE_CACHE}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: 6379
+      REDIS_DB: 8
 
       WEB_SERVER_PORT: 8104
     volumes:
@@ -237,6 +334,7 @@ services:
       - database
       - nginx
       - minio
+      - redis
       - kernel
 
 
@@ -256,6 +354,10 @@ services:
       APP_NAME: Gather
       STATIC_URL: /static/gather/
 
+      MULTITENANCY: ${MULTITENANCY}
+      DEFAULT_REALM: ${DEFAULT_REALM}
+      REALM_COOKIE: ${REALM_COOKIE}
+
       ADMIN_USERNAME: ${GATHER_ADMIN_USERNAME}
       ADMIN_PASSWORD: ${GATHER_ADMIN_PASSWORD}
 
@@ -273,6 +375,19 @@ services:
       PGPORT: 5432
       PGUSER: postgres
 
+      ENABLE_CONNECTION_POOL: ${ENABLE_DB_POOL}
+      DB_POOL_INTERNAL: ${ENABLE_DB_POOL}
+
+      DJANGO_USE_CACHE: ${ENABLE_CACHE}
+      REDIS_DJANGO_CACHE: ${ENABLE_CACHE}
+      REDIS_SESSION_CACHE: ${ENABLE_CACHE}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: 6379
+      REDIS_DB: 12
+
+      TENANCY_HEADER: 'X-Oauth-realm'
+
       # With offline export no restrictions
       EXPORT_MAX_ROWS_SIZE: 0
 
@@ -288,6 +403,7 @@ services:
     depends_on:
       - database
       - nginx
+      - redis
       - minio
       - kernel
       - odk
