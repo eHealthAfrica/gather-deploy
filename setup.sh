@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2020 by eHealth Africa : http://www.eHealthAfrica.org
+# Copyright (C) 2023 by eHealth Africa : http://www.eHealthAfrica.org
 #
 # See the NOTICE file distributed with this work for additional information
 # regarding copyright ownership.
@@ -26,20 +26,20 @@ echo "Initializing Gather environment."
 
 source .env
 
-docker-compose pull
+docker compose pull
 
-docker-compose up -d database minio
+docker compose up -d database minio
 sleep 2
 
 services=( kernel odk ui gather )
 for service in "${services[@]}"; do
-  docker-compose run --rm $service setup
+  docker compose run --rm $service setup
 
-  docker-compose run --rm $service manage create_user \
+  docker compose run --rm $service manage create_user \
       -u=$GATHER_USERNAME \
       -p=$GATHER_PASSWORD
 done
 
-docker-compose kill
+docker compose kill
 
 echo "Finished"
