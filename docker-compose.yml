@@ -21,7 +21,7 @@ services:
   # ---------------------------------
 
   database:
-    image: postgres:10-alpine
+    image: postgres:15-alpine
     environment:
       PGUSER: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
